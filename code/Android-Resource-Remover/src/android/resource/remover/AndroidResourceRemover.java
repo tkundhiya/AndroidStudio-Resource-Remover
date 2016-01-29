@@ -13,6 +13,8 @@ import org.w3c.dom.*;
 import javax.xml.parsers.*;
 import java.io.*;
 import java.nio.file.Files;
+import java.util.HashMap;
+import java.util.HashSet;
 
 
 /**
@@ -60,18 +62,35 @@ import java.nio.file.Files;
         this.lineNo = lineNo;
     }
     
-    public String resolve()
+    public int resolve()
     {
         if(this.file.delete())
        {
-    	   return(this.file.getName() + " deleted..");
+    	      System.out.println(this.file.getName() + " deleted..");
+              return 1;
        }
        else
        {
-    	   return(this.file.getName() + " deletion failed..");
+               System.out.println(this.file.getName() + " deletion failed..");
+               return 0;
        }
     }
     
+    
+    public int resolveLayoutSafely()
+    {
+        if(this.lineNo ==1 )
+        {
+            this.resolve();
+        }
+        
+        else
+        {
+            return 0;
+        }
+        
+        return 0;
+    }
     
 }
 
@@ -80,10 +99,19 @@ public class AndroidResourceRemover {
     /**
      * @param args the command line arguments
      */
+    
+    HashSet validfileSet = new HashSet();
+    
+    
     public static void main(String[] args) throws Exception {
         // TODO code application logic here
         
-        String inputXml = "input.xml";
+//        for (String s: args) {
+//            System.out.println(s);
+//        }
+        
+        
+        String inputXml = "inputLayout.xml";
         String moduleDirectory = "D:/iprof_android/trunk/code/" ;
         boolean askConfirm = false;
         
@@ -120,10 +148,13 @@ public class AndroidResourceRemover {
         
         System.out.println("length" + nodelist.getLength());
         
-        Problem P;
+        Problem P =null;
+        File file ;
+        
         
         for(int i = 0 ; i< nodelist.getLength() ;i++)
         {
+            
             Element E = (Element)nodelist.item(i);
         
             String filePath =  E.getElementsByTagName("file").item(0).getTextContent();
@@ -131,18 +162,36 @@ public class AndroidResourceRemover {
             
             int index = filePath.lastIndexOf("$");
             
-            filePath = filePath.substring(index+1);
-            
+            filePath = filePath.substring(index+1);            
             filePath = moduleDirectory+filePath;
-    
-            File file = new File(filePath);
+   
+            file = new File(filePath);
             
-            P = new Problem(file,Integer.parseInt(line));
+                    
+            if(P == null)
+            {
+              P = new Problem(file,Integer.parseInt(line));   
+            }
             
-            System.out.println("filePath" + "-" + P.getFile().getPath());
-            System.out.println("lineNo" + i + "-" + P.getLineNo());
-           
-            System.out.println(P.resolve());
+            else
+            {
+                P.file = file;
+                P.lineNo = Integer.parseInt(line);
+            }
+            
+            
+            
+            int resolveStatus = P.resolveLayoutSafely();
+            
+            if(resolveStatus ==1)
+            {
+                System.out.println(P.getFile().getPath()+" deleted..");
+            }
+            
+            else if(resolveStatus == 0)
+            {
+                System.out.println(P.getFile().getPath()+" deletion failed");
+            }
             
         }
         
