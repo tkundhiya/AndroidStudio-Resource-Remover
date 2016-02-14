@@ -15,6 +15,7 @@ import java.io.*;
 import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.HashSet;
+import org.xml.sax.SAXException;
 
 
 /**
@@ -71,8 +72,8 @@ import java.util.HashSet;
        }
        else
        {
-               System.out.println(this.file.getName() + " deletion failed..");
-               return 0;
+              System.out.println(this.file.getName() + " deletion failed..");
+              return 0;
        }
     }
     
@@ -100,7 +101,7 @@ public class AndroidResourceRemover {
      * @param args the command line arguments
      */
     
-    HashSet validfileSet = new HashSet();
+    public static HashSet<Problem> validfileSet = new HashSet();
     
     
     public static void main(String[] args) throws Exception {
@@ -130,6 +131,82 @@ public class AndroidResourceRemover {
     }
     
     
+    
+    
+    
+    
+    public static  HashMap<String,List<Integer>> parseAndgenerateFileSet(String xmlFilePath , String moduleDirectory) 
+           throws FileNotFoundException, ParserConfigurationException, SAXException, IOException
+    {
+        
+        
+        HashMap<String,List<Integer>> H = new HashMap();
+        
+        DocumentBuilderFactory factory ;
+        factory = DocumentBuilderFactory.newInstance();
+        
+        DocumentBuilder builder = factory.newDocumentBuilder();
+        
+        Document document =  builder.parse(xmlFilePath);
+        
+        document.getDocumentElement().normalize();
+       
+        NodeList nodelist = document.getElementsByTagName("problem");
+        
+        System.out.println("length" + nodelist.getLength());
+        
+        Problem P;
+        List<Integer> toBeAdded = new ArrayList();
+        Element E;
+        String filePath,line;
+        int index;
+        
+        
+        for(int i = 0 ; i< nodelist.getLength() ;i++)
+        {
+             E = (Element)nodelist.item(i);
+        
+             filePath =  E.getElementsByTagName("file").item(0).getTextContent();
+             line =  E.getElementsByTagName("line").item(0).getTextContent();
+            
+             index = filePath.lastIndexOf("$");
+            
+             filePath = filePath.substring(index+1);
+            
+             filePath = moduleDirectory+filePath;
+
+             if(H.containsKey(filePath))
+             {
+                 H.get(filePath).add(Integer.parseInt(line));
+             }
+
+             else
+             {
+                toBeAdded.clear();
+                toBeAdded.add(Integer.parseInt(line));
+                H.put(line, toBeAdded);
+             }
+            
+        }
+        
+      return H;
+
+    }
+    
+    public static void clearFileMap(HashMap<String,List<Integer>> H)
+    {
+        for(String filepath :H.keySet())
+        {
+            if(H.get(filepath).size()>1)
+            {
+                H.remove(filepath);
+            }
+        }
+        
+        
+    }
+    
+    
     public static void parseAndResolveXml(String xmlFilePath , String moduleDirectory) throws Exception
     {
         DocumentBuilderFactory factory ;
@@ -150,7 +227,7 @@ public class AndroidResourceRemover {
         
         Problem P =null;
         File file ;
-        
+        int totalFilesDeleted =0;
         
         for(int i = 0 ; i< nodelist.getLength() ;i++)
         {
@@ -165,38 +242,45 @@ public class AndroidResourceRemover {
             filePath = filePath.substring(index+1);            
             filePath = moduleDirectory+filePath;
    
-            file = new File(filePath);
             
-                    
-            if(P == null)
-            {
-              P = new Problem(file,Integer.parseInt(line));   
-            }
+           
+              
+                file = new File(filePath);
+
+                if(P == null)
+                {
+                  P = new Problem(file,Integer.parseInt(line));   
+                }
+
+                else
+                {
+                    P.file = file;
+                    P.lineNo = Integer.parseInt(line);
+                }
+
+                int resolveStatus = P.resolveLayoutSafely();
+
+
+                if(resolveStatus ==1)
+                {
+                    totalFilesDeleted++;
+                    System.out.println(P.getFile().getPath()+" deleted..");
+                }
+
+                else if(resolveStatus == 0)
+                {
+                    System.out.println(P.getFile().getPath()+" deletion failed");
+                }
             
-            else
-            {
-                P.file = file;
-                P.lineNo = Integer.parseInt(line);
-            }
             
-            
-            
-            int resolveStatus = P.resolveLayoutSafely();
-            
-            if(resolveStatus ==1)
-            {
-                System.out.println(P.getFile().getPath()+" deleted..");
-            }
-            
-            else if(resolveStatus == 0)
-            {
-                System.out.println(P.getFile().getPath()+" deletion failed");
-            }
             
         }
         
       
     }
+    
+    
+   
     
     
     public static ArrayList<Problem> parseXml(String xmlFilePath , String moduleDirectory) throws Exception
