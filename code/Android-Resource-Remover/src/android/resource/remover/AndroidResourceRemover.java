@@ -15,6 +15,14 @@ import java.io.*;
 import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import org.xml.sax.SAXException;
 
 
@@ -36,64 +44,6 @@ import org.xml.sax.SAXException;
 
 
 
- class Problem
-{
-      File file;
-      int lineNo;
-      
-
-    public Problem(File file, int lineNo) {
-        this.file = file;
-        this.lineNo = lineNo;
-    }
-
-    public File getFile() {
-        return file;
-    }
-
-    public void setFile(File file) {
-        this.file = file;
-    }
-    
-    public int getLineNo() {
-        return lineNo;
-    }
-
-    public void setLineNo(int lineNo) {
-        this.lineNo = lineNo;
-    }
-    
-    public int resolve()
-    {
-        if(this.file.delete())
-       {
-    	      System.out.println(this.file.getName() + " deleted..");
-              return 1;
-       }
-       else
-       {
-              System.out.println(this.file.getName() + " deletion failed..");
-              return 0;
-       }
-    }
-    
-    
-    public int resolveLayoutSafely()
-    {
-        if(this.lineNo ==1 )
-        {
-            this.resolve();
-        }
-        
-        else
-        {
-            return 0;
-        }
-        
-        return 0;
-    }
-    
-}
 
 public class AndroidResourceRemover {
 
@@ -101,7 +51,6 @@ public class AndroidResourceRemover {
      * @param args the command line arguments
      */
     
-    public static HashSet<Problem> validfileSet = new HashSet();
     
     
     public static void main(String[] args) throws Exception {
@@ -116,29 +65,136 @@ public class AndroidResourceRemover {
         String moduleDirectory = "D:/iprof_android/trunk/code/" ;
         boolean askConfirm = false;
         
-        if(!askConfirm)
+
+        if(askConfirm)
         {
-           parseAndResolveXml(inputXml, moduleDirectory);
-        }
-        else
-        {
-//           ArrayList<Problem> problems = parseXml(inputXml,moduleDirectory);
-//           
-//           ResolveProblem(problems);
+            //System.out.println("entered");
            
+               
+            //ArrayList<LintProblem> lintProblems = RemoverUtilities.parseAndgenerateLintProblems(inputXml, moduleDirectory);
+            HashMap<String,List<Integer>> H = RemoverUtilities.parseAndgenerateFileSet(inputXml, moduleDirectory);
+            
+            
+            for(String key: H.keySet())
+            {
+                System.out.println("File :" + key);
+                System.out.println("Lines :" + H.get(key).size());
+                
+            }
+            
+            
+            
+            
         }
-     
+        
+        
+//        startResolvingTheData();
+        
+          solveProblems();
+//        String filePath = "C:/Users/Tarun/Desktop/data/input"+1+".txt";
+//        SortedSet<Integer> set = SampleProblem.generateRandomLines();
+//        RemoverUtilities.removeUnusedLines(filePath,set);
+//        
+        
     }
     
     
     
-    
+    private static void startResolvingTheData() throws Exception
+    {
+
+         long init = System.currentTimeMillis();
+         System.err.println("currentTime"+init);
+        
+        ExecutorService executorService = Executors.newFixedThreadPool(100);
+
+        Set<Callable<String>> callables = new HashSet<Callable<String>>();
+
+        callables.add(new Callable<String>() {
+            public String call() throws Exception {
+                System.out.println(Thread.currentThread().getName() + " started Task 1 at" + System.currentTimeMillis());
+                Thread.sleep(2000);
+                System.out.println(Thread.currentThread().getName() + " solved Task 1 at" + System.currentTimeMillis());
+                return "Task 1";
+            }
+        });
+        callables.add(new Callable<String>() {
+            public String call() throws Exception {
+                System.out.println(Thread.currentThread().getName() + " started Task 2 at" + System.currentTimeMillis());
+                Thread.sleep(3000);
+                System.out.println(Thread.currentThread().getName() + " solved Task 2 at" + System.currentTimeMillis());
+                return "Task 2";
+            }
+        });
+        callables.add(new Callable<String>() {
+            public String call() throws Exception {
+                System.out.println(Thread.currentThread().getName() + " started Task 3 at" + System.currentTimeMillis());
+                Thread.sleep(4000);
+                System.out.println(Thread.currentThread().getName() + " solved Task 3 at" + System.currentTimeMillis());
+                return "Task 3";
+            }
+        });
+        callables.add(new Callable<String>() {
+            public String call() throws Exception {
+                System.out.println(Thread.currentThread().getName() + " started Task 4 at" + System.currentTimeMillis());
+                Thread.sleep(5000);
+                System.out.println(Thread.currentThread().getName() + " solved Task 4 at" + System.currentTimeMillis());
+                return "Task 4";
+            }
+        });
+        callables.add(new Callable<String>() {
+            public String call() throws Exception {
+                System.out.println(Thread.currentThread().getName() + " started Task 5 at" + System.currentTimeMillis());
+                Thread.sleep(5000);
+                System.out.println(Thread.currentThread().getName() + " solved Task 5 at" + System.currentTimeMillis());
+                return "Task 5";
+            }
+        });
+        callables.add(new Callable<String>() {
+            public String call() throws Exception {
+                System.out.println(Thread.currentThread().getName() + " started Task 6 at" + System.currentTimeMillis());
+                Thread.sleep(5000);
+                System.out.println(Thread.currentThread().getName() + " solved Task 6 at" + System.currentTimeMillis());
+                return "Task 6";
+            }
+        });
+        
+        
+        
+        
+        
+        for(int i = 8 ; i<100 ; i++)
+        {
+                callables.add(new Callable<String>() {
+                public String call() throws Exception {
+                    System.out.println(Thread.currentThread().getName() + " started Task x at" + System.currentTimeMillis());
+                    Thread.sleep(2000);
+                    System.out.println(Thread.currentThread().getName() + " solved Task x at" + System.currentTimeMillis());
+                    return "Task x";
+                }
+            });
+        }
+        
+        
+        List<Future<String>> futures = executorService.invokeAll(callables);
+
+        for(Future<String> future : futures){
+           // System.out.println("future.get = " + future.get());
+        }
+        
+        long end = System.currentTimeMillis();
+        System.err.println("endTime"+end);
+        System.err.println("Total Time :" + (end-init));
+            
+
+        executorService.shutdown();
+        
+    }
     
     
     public static  HashMap<String,List<Integer>> parseAndgenerateFileSet(String xmlFilePath , String moduleDirectory) 
            throws FileNotFoundException, ParserConfigurationException, SAXException, IOException
     {
-        
         
         HashMap<String,List<Integer>> H = new HashMap();
         
@@ -202,8 +258,7 @@ public class AndroidResourceRemover {
                 H.remove(filepath);
             }
         }
-        
-        
+               
     }
     
     
@@ -227,7 +282,7 @@ public class AndroidResourceRemover {
         
         Problem P =null;
         File file ;
-        int totalFilesDeleted =0;
+        int totalFilesDeleted = 0;
         
         for(int i = 0 ; i< nodelist.getLength() ;i++)
         {
@@ -241,36 +296,33 @@ public class AndroidResourceRemover {
             
             filePath = filePath.substring(index+1);            
             filePath = moduleDirectory+filePath;
-   
-            
-           
-              
-                file = new File(filePath);
+    
+            file = new File(filePath);
 
-                if(P == null)
-                {
-                  P = new Problem(file,Integer.parseInt(line));   
-                }
+            if(P == null)
+            {
+              P = new Problem(file,Integer.parseInt(line));   
+            }
 
-                else
-                {
-                    P.file = file;
-                    P.lineNo = Integer.parseInt(line);
-                }
+            else
+            {
+                P.file = file;
+                P.lineNo = Integer.parseInt(line);
+            }
 
-                int resolveStatus = P.resolveLayoutSafely();
+            int resolveStatus = P.resolveLayoutSafely();
 
 
-                if(resolveStatus ==1)
-                {
-                    totalFilesDeleted++;
-                    System.out.println(P.getFile().getPath()+" deleted..");
-                }
+            if(resolveStatus ==1)
+            {
+                totalFilesDeleted++;
+                System.out.println(P.getFile().getPath()+" deleted..");
+            }
 
-                else if(resolveStatus == 0)
-                {
-                    System.out.println(P.getFile().getPath()+" deletion failed");
-                }
+            else if(resolveStatus == 0)
+            {
+                System.out.println(P.getFile().getPath()+" deletion failed");
+            }
             
             
             
@@ -280,7 +332,30 @@ public class AndroidResourceRemover {
     }
     
     
-   
+    private static void solveProblems() throws Exception
+    {
+        Set<Callable<String>> callables = new HashSet<Callable<String>>();
+        ExecutorService service = Executors.newFixedThreadPool(4);
+        
+        for(int i = 1 ; i <=12 ; i++)
+        {
+            String filePath = "C:/Users/Tarun/Desktop/data/input"+i+".txt";
+            
+            SampleProblem S = new SampleProblem(filePath,i);
+            
+            callables.add(S);
+            
+        }
+        
+         List<Future<String>> futures;
+         futures = service.invokeAll(callables);
+         
+         for(Future<String> future : futures){
+            System.out.println("future.get = " + future.get());
+        }
+         
+        service.shutdown();
+    }
     
     
     public static ArrayList<Problem> parseXml(String xmlFilePath , String moduleDirectory) throws Exception
@@ -354,10 +429,10 @@ public class AndroidResourceRemover {
                System.out.println("item resource unused");
            }
            
-           
-           
-           
         }
     }
+    
+    
+    
     
 }

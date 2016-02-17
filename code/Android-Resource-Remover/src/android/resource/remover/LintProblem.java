@@ -8,12 +8,13 @@ package android.resource.remover;
 import java.io.File;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.concurrent.Callable;
 
 /**
  *
  * @author Tarun
  */
-public class LintProblem {
+public class LintProblem implements Callable {
     
     private File file;
     private SortedSet lineSet;  
@@ -32,7 +33,7 @@ public class LintProblem {
     }
     
     
-    public LintProblem(File file, TreeSet set) {
+    public LintProblem(File file, SortedSet set) {
         this.file = file;
         this.lineSet =  set;
     }
@@ -102,6 +103,13 @@ public class LintProblem {
             
         }
         
+    }
+
+    @Override
+    public Object call() throws Exception {
+        
+        return this.resolveFile();
+       
     }
     
     
